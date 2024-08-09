@@ -18,19 +18,21 @@ class _OnBoardingViewState extends State<OnBoardingView> {
   // รายการข้อมูลที่จะแสดงในแต่ละหน้าของการเริ่มต้น
   List pageArr = [
     {
-      "title": "Find Owner You Love",
-      "subtitle": "Discover the Ower Pet your like",
+      "title": "Pet Take Care",
+      "subtitle":
+          "Pet Take Care คือ \n แอพพลิเคชันที่เป็นตัวกลางในการจัดการหาผู้รับเลี้ยงสัตว์เลี้ยง",
       "image": "assets/img/on_boarding_1.png",
     },
     {
-      "title": "Fast contact",
-      "subtitle": "Fast contact and to your home, office\n wherever you are",
+      "title": "เจ้าของสัตว์เลี้ยง",
+      "subtitle":
+          "เจ้าของสัตว์เลี้ยงสามารถ \n ค้นหาผู้รับเลี้ยงที่ตรงความต้องการได้",
       "image": "assets/img/on_boarding_3.png",
     },
     {
-      "title": "Live Tracking",
+      "title": "ผู้รับฝากสัตว์เลี้ยง",
       "subtitle":
-          "Real time tracking of your pet on the app\nonce you placed the order",
+          "ผู้รับฝากสัตว์เลี้ยง \n จะถูกคัดกรองจากการลงพื้นที่ไปสัมภาษณ์ \n ว่ามีความพร้อมสำหรับเป็นผู้รับฝากหรือไม่",
       "image": "assets/img/on_boarding_2.png",
     },
   ];

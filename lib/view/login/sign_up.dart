@@ -25,9 +25,30 @@ class _SignUpViewState extends State<SignUpView> {
   final TextEditingController txtPassword = TextEditingController();
   final TextEditingController txtConfirmPassword = TextEditingController();
 
+  String errorMessage = '';
+
   Future<void> _signUp() async {
+    if (txtPassword.text != txtConfirmPassword.text) {
+      setState(() {
+        errorMessage = 'Passwords do not match.';
+      });
+      return;
+    }
+
+    if (txtName.text.isEmpty ||
+        txtMobile.text.isEmpty ||
+        txtAddress.text.isEmpty ||
+        txtEmail.text.isEmpty ||
+        txtPassword.text.isEmpty) {
+      setState(() {
+        errorMessage = 'Please fill in all fields.';
+      });
+      return;
+    }
+
     try {
-      final UserCredential userCredential = await _auth.createUserWithEmailAndPassword(
+      final UserCredential userCredential =
+          await _auth.createUserWithEmailAndPassword(
         email: txtEmail.text.trim(),
         password: txtPassword.text,
       );
@@ -48,8 +69,9 @@ class _SignUpViewState extends State<SignUpView> {
         MaterialPageRoute(builder: (context) => OnBoardingView()),
       );
     } catch (e) {
-      print('Error during sign up: $e');
-      // แสดงข้อความผิดพลาด (ถ้ามี)
+      setState(() {
+        errorMessage = e.toString();
+      });
     }
   }
 
@@ -173,6 +195,14 @@ class _SignUpViewState extends State<SignUpView> {
               ),
               const SizedBox(height: 25),
               RoundButton(title: "Sign Up", onPressed: _signUp),
+              const SizedBox(height: 20),
+              if (errorMessage.isNotEmpty)
+                Center(
+                  child: Text(
+                    errorMessage,
+                    style: TextStyle(color: Colors.red),
+                  ),
+                ),
               const SizedBox(height: 20),
               Center(
                 child: TextButton(

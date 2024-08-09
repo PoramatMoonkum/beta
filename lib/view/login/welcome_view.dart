@@ -39,7 +39,7 @@ class _WelcomeViewState extends State<WelcomeView> {
             SizedBox(height: media.width * 0.1),
 
             Text(
-          "Discover the best foods from over 1,000\nrestaurants and fast delivery to your\ndoorstep",
+          "Discover the PetSitter \nrestaurants and fast delivery to your\ndoorstep",
           style: TextStyle(
               color: TColor.primaryText, fontSize: 13, fontWeight: FontWeight.w500),
               textAlign: TextAlign.center,

@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:pettakecare/common/consts.dart';
+import 'package:pettakecare/view/card/rating.dart';
 import 'package:pettakecare/view/home/home_view.dart';
 import 'package:pettakecare/view/main_tabview/main_tabview.dart';
 import 'package:pettakecare/view/menu/menu_view.dart';
@@ -140,12 +141,9 @@ class _MenuViewState extends State<PaymentView> {
               text: 'สำเร็จ!',
               title: 'คุณได้รับ $point คะแนน',
               onConfirmBtnTap: () {
-                Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(
-                        builder: (BuildContext context) =>
-                            MainTabView()), // TODO: หลังจากจ่ายเงินไปที่หน้าอื่น
-                    (route) => route.isFirst);
+                Navigator.pop(context); // ปิด QuickAlert
+                CustomRatingBottomSheet.showFeedbackBottomSheet(
+                    context: context);
               });
           t.cancel();
         }

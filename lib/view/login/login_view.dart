@@ -20,6 +20,7 @@ class LoginView extends StatefulWidget {
 class _LoginViewState extends State<LoginView> {
   TextEditingController txtEmail = TextEditingController();
   TextEditingController txtPassword = TextEditingController();
+  String errorMessage = '';
 
   Future<void> loginUser(String email, String password) async {
     try {
@@ -29,28 +30,33 @@ class _LoginViewState extends State<LoginView> {
         password: password,
       );
       print('User ID: ${userCredential.user?.uid}');
-      // Add navigation or any other logic here after successful login
+      setState(() {
+        errorMessage = ''; // ล้างข้อความแสดงข้อผิดพลาดเมื่อเข้าสู่ระบบสำเร็จ
+      });
+      // เพิ่มการนำทางหรือฟังก์ชันอื่น ๆ ที่นี่หลังจากเข้าสู่ระบบสำเร็จ
     } catch (e) {
       print('Error: $e');
-      // Handle login error here
+      setState(() {
+        errorMessage = e.toString(); // อัพเดทข้อความแสดงข้อผิดพลาด
+      });
     }
   }
 
   Future<UserCredential> signInWithGoogle() async {
-    // Trigger the authentication flow
+    // เริ่มกระบวนการตรวจสอบสิทธิ์
     final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
 
-    // Obtain the auth details from the request
+    // รับข้อมูลการตรวจสอบสิทธิ์จากคำขอ
     final GoogleSignInAuthentication? googleAuth =
         await googleUser?.authentication;
 
-    // Create a new credential
+    // สร้างข้อมูลรับรองใหม่
     final credential = GoogleAuthProvider.credential(
       accessToken: googleAuth?.accessToken,
       idToken: googleAuth?.idToken,
     );
 
-    // Once signed in, return the UserCredential
+    // เมื่อเข้าสู่ระบบแล้ว ให้คืนค่า UserCredential
     return await FirebaseAuth.instance.signInWithCredential(credential);
   }
 
@@ -61,11 +67,11 @@ class _LoginViewState extends State<LoginView> {
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 25, horizontal: 25),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start, // Aligns children to the start
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 64), // Spacer at the top
+              const SizedBox(height: 64),
 
-              // Centered Text Section
+              // ส่วนข้อความที่อยู่ตรงกลาง
               Align(
                 alignment: Alignment.center,
                 child: Column(
@@ -77,7 +83,7 @@ class _LoginViewState extends State<LoginView> {
                           fontSize: 30,
                           fontWeight: FontWeight.w800),
                     ),
-                    const SizedBox(height: 8), // Space between title and subtitle
+                    const SizedBox(height: 8),
                     Text(
                       "Add your details to login",
                       style: TextStyle(
@@ -123,9 +129,9 @@ class _LoginViewState extends State<LoginView> {
                   onPressed: () async {
                     try {
                       await loginUser(txtEmail.text, txtPassword.text);
-                      // Check if login was successful
+                      // ตรวจสอบว่าเข้าสู่ระบบสำเร็จหรือไม่
                       if (FirebaseAuth.instance.currentUser != null) {
-                        // Navigate to the next page if login is successful
+                        // นำทางไปยังหน้าถัดไปหากเข้าสู่ระบบสำเร็จ
                         Navigator.push(
                           context,
                           MaterialPageRoute(
@@ -133,14 +139,27 @@ class _LoginViewState extends State<LoginView> {
                           ),
                         );
                       } else {
-                        // Show an error message or handle unsuccessful login
+                        // แสดงข้อความข้อผิดพลาดหรือจัดการกรณีที่เข้าสู่ระบบไม่สำเร็จ
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                              content: Text('Login failed. Please try again.')),
+                        );
                       }
                     } catch (e) {
                       print('Error: $e');
-                      // Handle login error here
-                      // Show an error message or handle unsuccessful login
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(content: Text('Error: $e')),
+                      );
                     }
                   }),
+              const SizedBox(height: 16),
+              if (errorMessage.isNotEmpty)
+                Center(
+                  child: Text(
+                    errorMessage,
+                    style: TextStyle(color: Colors.red),
+                  ),
+                ),
               const SizedBox(height: 16),
               Center(
                 child: TextButton(

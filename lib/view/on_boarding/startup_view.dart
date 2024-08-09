@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pettakecare/view/history/propage.dart';
 import 'package:pettakecare/view/login/welcome_view.dart';
 
 // คลาส StartupView ใช้สำหรับแสดงหน้าจอเริ่มต้นก่อนที่ผู้ใช้จะถูกนำไปยังหน้า WelcomeView

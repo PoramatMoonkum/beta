@@ -136,15 +136,18 @@ class _MenuViewState extends State<PaymentView> {
           }
 
           QuickAlert.show(
-              context: context,
-              type: QuickAlertType.success,
-              text: 'สำเร็จ!',
-              title: 'คุณได้รับ $point คะแนน',
-              onConfirmBtnTap: () {
-                Navigator.pop(context); // ปิด QuickAlert
-                CustomRatingBottomSheet.showFeedbackBottomSheet(
-                    context: context);
-              });
+            context: context,
+            type: QuickAlertType.success,
+            text: 'สำเร็จ!',
+            title: 'คุณได้รับ $point คะแนน',
+            onConfirmBtnTap: () {
+              Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(
+                      builder: (BuildContext context) => CustomRatingBottomSheet(
+                          petSitterId: book.get('sitter_id'))), // ส่ง ID ของ PetSitter ที่จับคู่
+                  (route) => route.isFirst);
+            });
           t.cancel();
         }
       });

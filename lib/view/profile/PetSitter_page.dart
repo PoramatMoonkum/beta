@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:pettakecare/view/menu/PetSitter_view.dart';
 import 'package:quickalert/models/quickalert_type.dart';
 import 'package:quickalert/widgets/quickalert_dialog.dart';
@@ -27,12 +28,10 @@ class Option {
 
 // State ของ PetSitterPage
 class PetSitterPageState extends State<PetSitterPage> {
-  final _formKey = GlobalKey<
-      FormState>(); // คีย์สำหรับฟอร์มเพื่อจัดการสถานะการตรวจสอบความถูกต้อง
+  final _formKey = GlobalKey<FormState>(); // คีย์สำหรับฟอร์มเพื่อจัดการสถานะการตรวจสอบความถูกต้อง
   String? sitterId; // ตัวระบุของ pet sitter
   String? sitterStatus; // สถานะของ pet sitter
-  CollectionReference sitters = FirebaseFirestore.instance
-      .collection('sitters'); // การอ้างอิงคอลเล็กชันใน Firestore
+  CollectionReference sitters = FirebaseFirestore.instance.collection('sitters'); // การอ้างอิงคอลเล็กชันใน Firestore
 
   // ตัวควบคุมข้อความสำหรับฟอร์ม
   TextEditingController txtName = TextEditingController();
@@ -52,10 +51,13 @@ class PetSitterPageState extends State<PetSitterPage> {
     'boxdog': Option('boxdog', 'กรงหมา', false),
   };
 
+  // ตัวแปรสำหรับคะแนนเฉลี่ยและจำนวนคะแนน
+  double averageRating = 0.0;
+  int totalRatings = 0;
+
   // ฟังก์ชันสำหรับตั้งค่า value ของ option
   void setOption(Option option, bool value) {
-    options[option.key]?.value =
-        value; // อัปเดตค่าในแผนที่ options ตามตัวเลือกที่เลือก
+    options[option.key]?.value = value; // อัปเดตค่าในแผนที่ options ตามตัวเลือกที่เลือก
   }
 
   // ฟังก์ชันสำหรับสร้างหรืออัปเดตข้อมูล pet sitter ใน Firestore
@@ -114,8 +116,7 @@ class PetSitterPageState extends State<PetSitterPage> {
     }
 
     // ดึงข้อมูลจาก Firestore
-    QuerySnapshot<Object?> snapshot =
-        await sitters.where('user_id', isEqualTo: currentUser).get();
+    QuerySnapshot<Object?> snapshot = await sitters.where('user_id', isEqualTo: currentUser).get();
 
     final sitter = snapshot.docs.firstOrNull; // เลือกเอกสารแรกในผลลัพธ์
     if (sitter!.exists) {
@@ -141,6 +142,40 @@ class PetSitterPageState extends State<PetSitterPage> {
           option.value = data[key];
         }
       });
+
+      // ดึงข้อมูลคะแนนหลังจากข้อมูลของ pet sitter ถูกดึงมาแล้ว
+      _fetchRatings();
+    }
+  }
+
+  // ฟังก์ชันสำหรับดึงข้อมูลคะแนน
+  Future<void> _fetchRatings() async {
+    if (sitterId == null) return;
+
+    // ดึงข้อมูลจาก Firestore
+    QuerySnapshot snapshot = await FirebaseFirestore.instance
+        .collection('ratings')
+        .where('petSitterId', isEqualTo: sitterId)
+        .get();
+
+    if (snapshot.docs.isNotEmpty) {
+      double totalRating = 0.0;
+      int count = snapshot.docs.length;
+
+      snapshot.docs.forEach((doc) {
+        totalRating += doc['rating'];
+      });
+
+      setState(() {
+        averageRating = totalRating / count;
+        totalRatings = count;
+      });
+    } else {
+      // กรณีที่ไม่มีคะแนนเลย
+      setState(() {
+        averageRating = 0.0;
+        totalRatings = 0;
+      });
     }
   }
 
@@ -160,87 +195,109 @@ class PetSitterPageState extends State<PetSitterPage> {
         foregroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
-        actions: const [NotificationBadge()], // แสดงไอคอนการแจ้งเตือน
+        actions: const [NotificationBadge()],
       ),
       body: SingleChildScrollView(
-          child: Column(children: [
-        Center(
-          child: Form(
-            key: _formKey, // เชื่อมโยงกับฟอร์ม
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: <Widget>[
-                // แสดงสถานะของ pet sitter
-                Text('Status: ' + (sitterStatus ?? 'InActive')),
+        child: Column(
+          children: [
+            Center(
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: <Widget>[
+                    // แสดงสถานะของ pet sitter
+                    Text('Status: ' + (sitterStatus ?? 'InActive')),
+                    // แสดงคะแนนเฉลี่ย
+                      SizedBox(height: 20),
+                    Text(
+                      'คะแนนเฉลี่ย: ${averageRating.toStringAsFixed(1)} (${totalRatings} ratings)',
+                      style: TextStyle(fontSize: 16),
+                    ),
+                    RatingBar.builder(
+                      initialRating: averageRating,
+                      minRating: 1,
+                      direction: Axis.horizontal,
+                      allowHalfRating: true,
+                      itemCount: 5,
+                      itemBuilder: (context, _) => Icon(
+                        Icons.star,
+                        color: Colors.amber,
+                      ),
+                      ignoreGestures: true, // ทำให้ไม่สามารถโต้ตอบได้
+                      onRatingUpdate: (rating) {
+                        // ไม่มีฟังก์ชันสำหรับอัปเดตคะแนนในหน้า PetSitterPage
+                      },
+                    ),
+                    // ฟิลด์สำหรับกรอกชื่อ
+                    TextFormField(
+                      controller: txtName,
+                      decoration: InputDecoration(
+                        labelText: 'Name',
+                      ),
+                    ),
 
-                // ฟิลด์สำหรับกรอกชื่อ
-                TextFormField(
-                  controller: txtName,
-                  decoration: InputDecoration(
-                    labelText: 'Name',
-                  ),
+                    // ฟิลด์สำหรับกรอกอีเมล
+                    TextFormField(
+                      controller: txtEmail,
+                      decoration: InputDecoration(
+                        labelText: 'Email',
+                      ),
+                    ),
+
+                    // ฟิลด์สำหรับกรอกหมายเลขโทรศัพท์
+                    TextFormField(
+                      controller: txtMobile,
+                      decoration: InputDecoration(
+                        labelText: 'Mobile',
+                      ),
+                    ),
+
+                    // ฟิลด์สำหรับกรอกที่อยู่
+                    TextFormField(
+                      controller: txtAddress,
+                      decoration: InputDecoration(
+                        labelText: 'Address',
+                      ),
+                    ),
+
+                    // แสดงตัวเลือกต่าง ๆ
+                    ...createOptionWidget(options),
+
+                    // แสดงคะแนนดาว
+                  
+
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 16.0),
+                      child: ElevatedButton(
+                        onPressed: () async {
+                          if (_formKey.currentState!.validate()) {
+                            ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                content: Text('Processing Data')));
+
+                            String? sitter_id = await _createSistter(sitterId);
+                            if (sitter_id == null) {
+                              return;
+                            }
+
+                            QuickAlert.show(
+                                context: context,
+                                type: QuickAlertType.success,
+                                text: 'ทำรายการสำเร็จ!',
+                                title: 'สำเร็จ!',
+                                confirmBtnText: 'ตกลง');
+                          }
+                        },
+                        child: Text('บันทึก'),
+                      ),
+                    ),
+                  ],
                 ),
-
-                // ฟิลด์สำหรับกรอกอีเมล
-                TextFormField(
-                  controller: txtEmail,
-                  decoration: InputDecoration(
-                    labelText: 'Email',
-                  ),
-                ),
-
-                // ฟิลด์สำหรับกรอกหมายเลขโทรศัพท์
-                TextFormField(
-                  controller: txtMobile,
-                  decoration: InputDecoration(
-                    labelText: 'Mobile',
-                  ),
-                ),
-
-                // ฟิลด์สำหรับกรอกที่อยู่
-                TextFormField(
-                  controller: txtAddress,
-                  decoration: InputDecoration(
-                    labelText: 'Address',
-                  ),
-                ),
-
-                // แสดงตัวเลือกต่าง ๆ
-                ...createOptionWidget(options),
-
-                Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 16.0),
-                  child: ElevatedButton(
-                    onPressed: () async {
-                      // ตรวจสอบความถูกต้องของฟอร์ม
-                      if (_formKey.currentState!.validate()) {
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                            content: Text(
-                                'Processing Data'))); // แสดงข้อความเมื่อกำลังประมวลผล
-
-                        // สร้างหรืออัปเดตข้อมูล pet sitter
-                        String? sitter_id = await _createSistter(sitterId);
-                        if (sitter_id == null) {
-                          return; // หยุดการทำงานถ้าเกิดข้อผิดพลาด
-                        }
-
-                        // แสดงกล่องข้อความสำเร็จ
-                        QuickAlert.show(
-                            context: context,
-                            type: QuickAlertType.success,
-                            text: 'ทำรายการสำเร็จ!',
-                            title: 'สำเร็จ!',
-                            confirmBtnText: 'ตกลง');
-                      }
-                    },
-                    child: Text('บันทึก'),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        )
-      ])),
+              ),
+            )
+          ],
+        ),
+      ),
     );
   }
 
@@ -249,14 +306,12 @@ class PetSitterPageState extends State<PetSitterPage> {
     List<Widget> list = [];
     options.forEach((key, option) {
       list.add(
-        // สร้าง CheckboxListTile สำหรับแต่ละตัวเลือก
         CheckboxListTile(
           title: Text(option.label),
           value: option.value,
           onChanged: (isSelected) {
-            log('change');
             setState(() {
-              option.value = !option.value; // เปลี่ยนสถานะของตัวเลือก
+              option.value = !option.value;
             });
           },
         ),

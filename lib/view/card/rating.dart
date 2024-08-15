@@ -64,7 +64,7 @@ class _CustomRatingBottomSheetState extends State<CustomRatingBottomSheet> {
   final TextEditingController _reviewController = TextEditingController();
 
   Future<void> _submitRating() async {
-    // บันทึกคะแนนและรีวิวไปยัง Firestore
+  try {
     await FirebaseFirestore.instance.collection('ratings').add({
       'petSitterId': widget.petSitterId,
       'rating': _rating,
@@ -73,7 +73,12 @@ class _CustomRatingBottomSheetState extends State<CustomRatingBottomSheet> {
     });
 
     Navigator.pop(context);
+  } catch (e) {
+    print('Error: $e');
+    // อาจแสดง error message หรือทำการ redirect ไปยังหน้าอื่นตามที่ต้องการ
   }
+}
+
 
   @override
   Widget build(BuildContext context) {

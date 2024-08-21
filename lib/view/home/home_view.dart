@@ -156,23 +156,34 @@ class _HomeViewState extends State<HomeView> {
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                IconButton(
-                  onPressed: () {
-                    // นำทางไปยังหน้าจอ Propet เพื่อแก้ไขข้อมูลสัตว์เลี้ยง
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => Propet(
-                          petId: pet.id,
-                          name: data['name'],
-                          history: data['history'],
-                          address: data['address'],
-                          imageUrl: data['imageUrl'],
-                        ),
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.edit), // ไอคอนสำหรับแก้ไขข้อมูล
+                Row(
+                  children: [
+                    IconButton(
+                      onPressed: () {
+                        // นำทางไปยังหน้าจอ Propet เพื่อแก้ไขข้อมูลสัตว์เลี้ยง
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => Propet(
+                              petId: pet.id,
+                              name: data['name'],
+                              history: data['history'],
+                              address: data['address'],
+                              imageUrl: data['imageUrl'],
+                            ),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.edit), // ไอคอนสำหรับแก้ไขข้อมูล
+                    ),
+                    IconButton(
+                      onPressed: () {
+                        // ยืนยันการลบข้อมูลสัตว์เลี้ยง
+                        _confirmDeletePet(pet.id);
+                      },
+                      icon: const Icon(Icons.delete, color: Colors.red), // ไอคอนสำหรับลบข้อมูล
+                    ),
+                  ],
                 ),
               ],
             ),
@@ -208,8 +219,6 @@ class _HomeViewState extends State<HomeView> {
                         builder: (context) => PetOwnerView(pet: data),
                       ),
                     );
-                    // เพิ่มฟังก์ชันการแก้ไขที่นี่
-                    // ตัวอย่างเช่น นำทางไปยังหน้าจอแก้ไขด้วยข้อมูล
                   },
                   child: const Text('ฝากสัตว์เลี้ยง'),
                 ),
@@ -219,5 +228,51 @@ class _HomeViewState extends State<HomeView> {
         ),
       ),
     );
+  }
+
+  // ฟังก์ชันสำหรับยืนยันการลบสัตว์เลี้ยง
+  void _confirmDeletePet(String petId) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('ยืนยันการลบ'),
+          content: const Text('คุณแน่ใจว่าต้องการลบสัตว์เลี้ยงตัวนี้?'),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('ยกเลิก'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            TextButton(
+              child: const Text('ลบ'),
+              onPressed: () {
+                _deletePet(petId);
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // ฟังก์ชันสำหรับลบสัตว์เลี้ยงจาก Firestore
+  void _deletePet(String petId) async {
+    try {
+      await FirebaseFirestore.instance
+          .collection('history')
+          .doc(petId)
+          .delete();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('ลบสัตว์เลี้ยงเรียบร้อยแล้ว')),
+      );
+    } catch (e) {
+      log('Error deleting pet: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('เกิดข้อผิดพลาดในการลบสัตว์เลี้ยง')),
+      );
+    }
   }
 }

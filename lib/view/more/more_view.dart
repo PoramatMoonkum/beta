@@ -1,6 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 import 'package:pettakecare/common/color_extension.dart';
 import 'package:pettakecare/view/login/login_view.dart';
 import 'package:pettakecare/view/more/notifications.dart';
@@ -53,7 +52,7 @@ class _MoreViewState extends State<MoreView> {
   // ฟังก์ชันสำหรับการออกจากระบบ
   Future<void> _signOut() async {
     await FirebaseAuth.instance.signOut(); // ออกจากระบบ Firebase Authentication
-    await GoogleSignIn().signOut(); // ออกจากระบบ Google Sign-In
+    
   }
 
   @override

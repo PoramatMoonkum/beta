@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:pettakecare/common_widget/round_textfield.dart';
+import 'package:pettakecare/view/home/home_view.dart';
+import 'package:pettakecare/view/main_tabview/main_tabview.dart';
 
 // class RatingVote extends StatefulWidget {
 //   const RatingVote({super.key});
@@ -72,12 +74,18 @@ class _CustomRatingBottomSheetState extends State<CustomRatingBottomSheet> {
       'timestamp': Timestamp.now(),
     });
 
-    Navigator.pop(context);
+    // นำทางกลับไปที่ MainTabView พร้อมกับเลือกแท็บ Home
+    Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(builder: (context) => MainTabView()),
+    );
   } catch (e) {
     print('Error: $e');
-    // อาจแสดง error message หรือทำการ redirect ไปยังหน้าอื่นตามที่ต้องการ
+    // คุณอาจต้องการแสดงข้อความแสดงข้อผิดพลาด
   }
 }
+
+
 
 
   @override

@@ -353,7 +353,8 @@ class _PetOwnerViewState extends State<PetOwnerView> {
                               FirebaseAuth.instance.currentUser?.uid.toString())
                       .snapshots(),
                   builder: (context, snapshot) {
-                    return DropdownMenu<Map<String, dynamic>>(
+                    if (snapshot.hasData && snapshot.data!.docs.length > 1) {
+                      return DropdownMenu<Map<String, dynamic>>(
                         width: 300,
                         onSelected: (value) {
                           setState(() {
@@ -363,16 +364,23 @@ class _PetOwnerViewState extends State<PetOwnerView> {
                             }
                           });
                         },
+                        hintText: "เพิ่มสัตว์เลี้ยงที่คุณมี",
                         dropdownMenuEntries: snapshot.data!.docs.map((doc) {
                           final item = doc.data();
                           return DropdownMenuEntry<Map<String, dynamic>>(
-                              label:
-                                  item.containsKey('name') ? item['name'] : '',
-                              value: item);
-                        }).toList());
+                            label: item.containsKey('name') ? item['name'] : '',
+                            value: item,
+                          );
+                        }).toList(),
+                      );
+                    } else {
+                      return SizedBox
+                          .shrink(); // ถ้ามีสัตว์เลี้ยงน้อยกว่าหรือเท่ากับ 1 ตัว ซ่อน Dropdown
+                    }
                   },
                 ),
               ),
+
               const SizedBox(
                 height: 20,
               ),
@@ -384,7 +392,7 @@ class _PetOwnerViewState extends State<PetOwnerView> {
                 ),
                 child: const Center(
                   child: Text(
-                    "แท็กสื่อที่ต้องการ",
+                    "กำหนดขอบเขตหมวดหมู่ที่ต้องการจับคู่",
                     style: TextStyle(
                       color: Colors.white,
                       fontSize: 18,

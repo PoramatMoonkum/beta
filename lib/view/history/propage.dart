@@ -134,7 +134,7 @@ class _PropageState extends State<Propage> {
                 QuickAlert.show(
                   context: context,
                   type: QuickAlertType.success, // แสดง alert ว่าการบันทึกสำเร็จ
-                  text: 'แก้ไขสำเร็จ!',
+                  text: 'สำเร็จ!',
                 );
               },
               child: const Text('บันทึก'),

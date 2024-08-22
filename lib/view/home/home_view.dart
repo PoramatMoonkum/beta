@@ -136,99 +136,122 @@ class _HomeViewState extends State<HomeView> {
     );
   }
 
-  // ฟังก์ชันสร้างการ์ดสำหรับแต่ละสัตว์เลี้ยง
-  Widget _buildPetCard(DocumentSnapshot pet) {
-    var data =
-        pet.data() as Map<String, dynamic>; // ดึงข้อมูลจากเอกสาร Firestore
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'ชื่อสัตว์เลี้ยง: ${data['name']}', // แสดงชื่อสัตว์เลี้ยง
-                  style: const TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                Row(
-                  children: [
-                    IconButton(
-                      onPressed: () {
-                        // นำทางไปยังหน้าจอ Propet เพื่อแก้ไขข้อมูลสัตว์เลี้ยง
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => Propet(
-                              petId: pet.id,
-                              name: data['name'],
-                              history: data['history'],
-                              address: data['address'],
-                              imageUrl: data['imageUrl'],
-                            ),
-                          ),
-                        );
-                      },
-                      icon: const Icon(Icons.edit), // ไอคอนสำหรับแก้ไขข้อมูล
-                    ),
-                    IconButton(
-                      onPressed: () {
-                        // ยืนยันการลบข้อมูลสัตว์เลี้ยง
-                        _confirmDeletePet(pet.id);
-                      },
-                      icon: const Icon(Icons.delete, color: Colors.red), // ไอคอนสำหรับลบข้อมูล
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Text(
-              'ประวัติโรคประจำตัวสัตว์เลี้ยง: ${data['history']}', // แสดงประวัติโรคประจำตัว
-              style: const TextStyle(fontSize: 16),
-            ),
-            const SizedBox(height: 10),
-            Text(
-              'ที่อยู่: ${data['address']}', // แสดงที่อยู่
-              style: const TextStyle(fontSize: 16),
-            ),
-            if (data['imageUrl'] != null)
-              SizedBox(
-                height: 200,
-                width: double.infinity,
-                child: Image.network(
-                  data['imageUrl'], // แสดงภาพสัตว์เลี้ยงจาก URL
-                  fit: BoxFit.cover,
+// ฟังก์ชันสร้างการ์ดสำหรับแต่ละสัตว์เลี้ยง
+Widget _buildPetCard(DocumentSnapshot pet) {
+  var data = pet.data() as Map<String, dynamic>; // ดึงข้อมูลจากเอกสาร Firestore
+  bool isBeingTakenCare = data['isBeingTakenCare'] ?? false; // ดึงสถานะการดูแล
+
+  return Card(
+    child: Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'ชื่อสัตว์เลี้ยง: ${data['name']}', // แสดงชื่อสัตว์เลี้ยง
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                ElevatedButton(
-                  onPressed: () {
-                    log(data.toString());
-                    // นำทางไปยังหน้าจอ PetOwnerView เพื่อฝากสัตว์เลี้ยง
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => PetOwnerView(pet: data),
-                      ),
-                    );
-                  },
-                  child: const Text('ฝากสัตว์เลี้ยง'),
-                ),
-              ],
+              Row(
+                children: [
+                  IconButton(
+                    onPressed: () {
+                      // นำทางไปยังหน้าจอ Propet เพื่อแก้ไขข้อมูลสัตว์เลี้ยง
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => Propet(
+                            petId: pet.id,
+                            name: data['name'],
+                            history: data['history'],
+                            address: data['address'],
+                            imageUrl: data['imageUrl'],
+                          ),
+                        ),
+                      );
+                    },
+                    icon: const Icon(Icons.edit), // ไอคอนสำหรับแก้ไขข้อมูล
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      // ยืนยันการลบข้อมูลสัตว์เลี้ยง
+                      _confirmDeletePet(pet.id);
+                    },
+                    icon: const Icon(Icons.delete, color: Colors.red), // ไอคอนสำหรับลบข้อมูล
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          Text(
+            'ประวัติโรคประจำตัวสัตว์เลี้ยง: ${data['history']}', // แสดงประวัติโรคประจำตัว
+            style: const TextStyle(fontSize: 16),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            'ที่อยู่: ${data['address']}', // แสดงที่อยู่
+            style: const TextStyle(fontSize: 16),
+          ),
+          if (data['imageUrl'] != null)
+            SizedBox(
+              height: 200,
+              width: double.infinity,
+              child: Image.network(
+                data['imageUrl'], // แสดงภาพสัตว์เลี้ยงจาก URL
+                fit: BoxFit.cover,
+              ),
             ),
-          ],
-        ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              if (isBeingTakenCare)
+                Container(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 12.0),
+                  decoration: BoxDecoration(
+                    color: Colors.green.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    'กำลังฝากอยู่', // ข้อความสถานะการฝาก
+                    style: const TextStyle(
+                      color: Colors.green,
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              const Spacer(), // ใช้ Spacer เพื่อดันปุ่มไปทางขวา
+              ElevatedButton(
+                onPressed: () {
+                  log(data.toString());
+                  // นำทางไปยังหน้าจอ PetOwnerView เพื่อฝากสัตว์เลี้ยง
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => PetOwnerView(pet: data),
+                    ),
+                  );
+                },
+                child: const Text('ฝากสัตว์เลี้ยง'),
+              ),
+            ],
+          ),
+        ],
       ),
-    );
-  }
+    ),
+  );
+}
+
+
+
+
+
 
   // ฟังก์ชันสำหรับยืนยันการลบสัตว์เลี้ยง
   void _confirmDeletePet(String petId) {

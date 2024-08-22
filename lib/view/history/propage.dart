@@ -41,32 +41,34 @@ class _PropageState extends State<Propage> {
   }
 
   // ฟังก์ชันสำหรับอัปเดตข้อมูลผู้ใช้
-  Future<void> _updateUserData() async {
-    String? imageUrl;
+Future<void> _updateUserData() async {
+  String? imageUrl;
 
-    // เช็คว่ามีการเลือกรูปภาพหรือไม่
-    if (_image != null) {
-      try {
-        // สร้าง reference สำหรับการเก็บไฟล์ใน Firebase Storage
-        final storageRef = _storage.ref().child('images/${_image!.name}');
-        // อัปโหลดไฟล์ไปยัง Firebase Storage
-        await storageRef.putFile(File(_image!.path));
-        // รับ URL ของไฟล์ที่อัปโหลด
-        imageUrl = await storageRef.getDownloadURL();
-      } catch (e) {
-        print('Error uploading image: $e'); // แสดงข้อผิดพลาดหากเกิดขึ้น
-      }
+  // เช็คว่ามีการเลือกรูปภาพหรือไม่
+  if (_image != null) {
+    try {
+      // สร้าง reference สำหรับการเก็บไฟล์ใน Firebase Storage
+      final storageRef = _storage.ref().child('images/${_image!.name}');
+      // อัปโหลดไฟล์ไปยัง Firebase Storage
+      await storageRef.putFile(File(_image!.path));
+      // รับ URL ของไฟล์ที่อัปโหลด
+      imageUrl = await storageRef.getDownloadURL();
+    } catch (e) {
+      print('Error uploading image: $e'); // แสดงข้อผิดพลาดหากเกิดขึ้น
     }
-
-    // เพิ่มข้อมูลลงใน Firestore
-    await _firestore.collection('history').add({
-      'userId': _user.uid,
-      'name': _nameController.text, // ข้อมูลชื่อสัตว์เลี้ยง
-      'history': _historyController.text, // ข้อมูลประวัติโรคประจำตัว
-      'address': _addressController.text, // ข้อมูลที่อยู่
-      'imageUrl': imageUrl, // URL ของรูปภาพ
-    });
   }
+
+  // เพิ่มข้อมูลลงใน Firestore
+  await _firestore.collection('history').add({
+    'userId': _user.uid,
+    'name': _nameController.text, // ข้อมูลชื่อสัตว์เลี้ยง
+    'history': _historyController.text, // ข้อมูลประวัติโรคประจำตัว
+    'address': _addressController.text, // ข้อมูลที่อยู่
+    'imageUrl': imageUrl, // URL ของรูปภาพ
+    'isBeingTakenCare': false, // ตั้งค่าเริ่มต้นเป็น false
+  });
+}
+
 
   // ฟังก์ชันสำหรับเลือกภาพจาก Gallery
   Future<void> _pickImage() async {
